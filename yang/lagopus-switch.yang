@@ -1,0 +1,238 @@
+module lagopus-switch {
+  yang-version "1";
+
+  // namespace
+  namespace "http://www.lagopus.org/";
+
+  prefix lago;
+
+  import ietf-inet-types { prefix inet; }
+
+  organization "Lagopus project";
+
+  contact
+    "Lagopus project
+    lagopus-devel@lists.sourceforge.net";
+  description
+    "A description of a Lagopus Software OpenFlow 1.3 Switch.";
+
+  revision "2018-03-13" {
+    description
+      "Initial revision";
+    reference "0.1.0";
+  }
+
+  //typedef statements
+
+  typedef InterfaceType {
+    type enumeration {
+      enum "ethernet-dpdk-phy" {
+        description "DPDK interface";
+      }
+      enum "ethernet-rawsock" {
+        description "Rawsocket interface";
+      }
+    }
+    description
+      "Interface type for lagopus vswitch.";
+  }
+
+  typedef OFCTPProtocol {
+    type enumeration {
+      enum "tcp" {
+        description "TCP";
+      }
+      enum "tls" {
+        description "TLS";
+      }
+    }
+    description
+      "Using Transport Protocol for OpenFlow";
+  }
+
+  typedef OFCRole {
+    type enumeration {
+      enum "master" {
+        description "master";
+      }
+      enum "slave" {
+        description "slave";
+      }
+      enum "equal" {
+        description "equal";
+      }
+    }
+    description
+      "Role of OpenFlow Controller";
+  }
+
+  typedef OFCConnectionType {
+    type enumeration {
+      enum "main" {
+        description "main";
+      }
+      enum "auxiliary" {
+        description "auxiliary";
+      }
+    }
+    description
+      "Controller connection type.";
+  }
+
+  typedef OFFailMode {
+    type enumeration {
+      enum "secure" {
+        description "secure";
+      }
+      enum "standalone" {
+        description "standalone";
+      }
+    }
+    description "Mode when connection to controller was failed.";
+  }
+
+
+  // grouping statements
+
+  grouping interfaces {
+    description "Parameters of interfaces";
+    list interface {
+      key "name";
+
+      description "Parameters of interfaces";
+
+      leaf name {
+        type string;
+	description "Nmae to identify the interface";
+      }
+      leaf type {
+        type InterfaceType;
+	description "Type of the interface";
+      }
+      leaf device {
+        type string;
+	description
+	  "Name of the device associated with the interface.
+
+           Examples:  veth0
+                      0000:05:00.0
+                      eth_vhost0,iface=/tmp/sock0
+
+          ";
+      }
+    }
+  }
+
+  grouping ports {
+    description "Parameters of ports";
+    list port {
+      key "name";
+      description "Parameters of ports";
+      leaf name {
+        type string;
+	description "Name to identify the port";
+      }
+      leaf interface {
+	type leafref {
+          path "../../interface/name";
+        }
+	description "name of interface associated with the port";
+      }
+    }
+  }
+
+  grouping channels {
+    description "Prameters of channels used to communicate with OF controllers";
+    list channel {
+      key "name";
+      description "Prameters of channels used to communicate with OF controllers";
+      leaf name {
+        type string;
+	description "Name to identify the channel";
+      }
+      leaf dst-addr {
+        type inet:ipv4-address;
+	description "IP address of the controller";
+      }
+      leaf dst-port {
+        type uint16;
+	description "tcp port number of the controller";
+      }
+      leaf protocol {
+        type OFCTPProtocol;
+	description "Transport protocol of OpenFlow protocol.";
+      }
+    }
+  }
+
+  grouping controllers {
+    description "Parameters releated to OpenFlow controller.";
+    list controller {
+      key "name";
+      description "Parameters releated to OpenFlow controller.";
+      leaf name {
+        type string;
+	description "Name to identify the controller.";
+      }
+      leaf channel {
+        type leafref {
+	  path "../../channel/name";
+        }
+	description "channel name used to connect to the controller";
+      }
+      leaf role {
+        type OFCRole;
+        description "Role of the controller";
+      }
+      leaf connection-type {
+        type OFCConnectionType;
+	description "Controller connection type.";
+      }
+    }
+  }
+
+  grouping bridges {
+    description "Parameters of bridge";
+    list bridge {
+      key "name";
+      description "Parameters of bridge";
+      leaf name {
+        type string;
+	description "Name to identify the bridge";
+      }
+      leaf dpid {
+        type uint64;
+	description "Datapath ID";
+      }
+      leaf-list controller {
+        type string;
+	description "Name of controller(s) assosiated with the bridge";
+      }
+      list port {
+        key openflow-port-id;
+	description "Port name adn OpenFlow port ID pair(s) associated with the bridge";
+        leaf openflow-port-id {
+	  type uint32;
+	  description "Port ID to be used in OpenFlow protocol, Nonnegative integer";
+        }
+	leaf name {
+	  type leafref {
+	    path "../../../port/name";
+          }
+	  description "Name of the port defined in port object";
+        }
+      }
+      leaf fail-mode {
+        type OFFailMode;
+	description "Mode when connection to controller was failed.";
+      }
+    }
+  }
+
+  // data definition statements
+  uses interfaces;
+  uses ports;
+  uses channels;
+  uses controllers;
+  uses bridges;
+}
