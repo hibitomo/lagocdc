@@ -1,0 +1,7 @@
+[[constraint]]
+  name = "github.com/coreswitch/openconfigd"
+    version = "0.8.0"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+    version = "1.9.1"

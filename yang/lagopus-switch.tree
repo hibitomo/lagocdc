@@ -1,0 +1,26 @@
+module: lagopus-switch
+    +--rw interface* [name]
+    |  +--rw name      string
+    |  +--rw type      InterfaceType
+    |  +--rw device    string
+    +--rw port* [name]
+    |  +--rw name         string
+    |  +--rw interface    -> ../../interface/name
+    +--rw channel* [name]
+    |  +--rw name        string
+    |  +--rw dst-addr    inet:ipv4-address
+    |  +--rw dst-port?   uint16
+    |  +--rw protocol    OFCTPProtocol
+    +--rw controller* [name]
+    |  +--rw name               string
+    |  +--rw channel            -> ../../channel/name
+    |  +--rw role               OFCRole
+    |  +--rw connection-type    OFCConnectionType
+    +--rw bridge* [name]
+       +--rw name          string
+       +--rw dpid          uint64
+       +--rw controller*   string
+       +--rw port* [name]
+       |  +--rw port-id    uint32
+       |  +--rw name       -> ../../../port/name
+       +--rw fail-mode?    OFFailMode
